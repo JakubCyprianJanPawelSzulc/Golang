@@ -9,12 +9,16 @@
 // Napisz program taki jak na poziomie 2, ale dodaj do niego dodatkowe pytanie na końcu, po odgadnięciu liczby, które brzmi "Czy gramy jeszcze raz? [T/N]". Gdy użytkownik wybierze odpowiedź (domyślnie tak lub nie), program rozpoczyna jeszcze raz grę z INNĄ wylosowaną liczbą, albo się kończy.
 // Poziom 4.
 // Program z poziomu 3 umożliwia wiele gier. Zmodyfikuj go tak, aby umożliwiał zapamiętanie w ilu próbach użytkownik odgadł liczbę. Po zakończeniu gry zapytaj użytkownika o imię, i zapisz je do struktury danych. Gdyby gra była kontynuowana kolejny raz, ponawiaj takie pytania, aby zebrać dane o wynikach różnych użytkowników. Na zakończenie programu wypisz podsumowanie: kto w ilu próbach odgadywał liczby, posortowane rosnąco według liczby prób.
+// Poziom 5.
+// Niech program z poziomu 4 zapisuje swoje wyniki do pliku, tworząc w ten sposób listę "Hall of fame", czyli tabelę najlepszych rezultatów. W tym pliku zapisuj liczbę prób, nazwę użytkownika oraz datę gry; możesz także zapisać zgadywaną liczbę. Taki plik należy wczytać po uruchomieniu programu i załadować do niego wczytane poprzednie rekordy. Program może wtedy po każdej grze informować użytkownika o pobiciu rekordu globalnego, lub osobistego. Pozostałe elementy mogą pozostać bez zmian. Użyj w tym programie struktur lub map, zależnie od tego, które rozwiązanie będzie bardziej pasowało do algorytmu, jaki opracujesz.
 
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math/rand"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -24,12 +28,16 @@ import (
 type playerResult struct {
 	name    string
 	guesses int
+	date    time.Time
+	number  int
 }
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	var results []playerResult
+
+	loadResultsFromFile("data.txt", &results)
 
 	for {
 		fmt.Println("Podaj maksimum zakresu")
@@ -70,7 +78,19 @@ func main() {
 			fmt.Println("Podaj swoje imię")
 			fmt.Scanln(&name)
 
-			results = append(results, playerResult{name, guesses})
+			result := playerResult{name, guesses, time.Now(), number}
+			results = append(results, result)
+
+			saveResultToFile("data.txt", result)
+
+			sort.Slice(results, func(i, j int) bool {
+				return results[i].guesses < results[j].guesses
+			})
+
+			fmt.Println("Podsumowanie wyników:")
+			for _, result := range results {
+				fmt.Printf("%s odgadł(a) w %d próbach %s dla liczby %d\n", result.name, result.guesses, result.date.Format("2006-01-02"), result.number)
+			}
 		}
 
 		var playAgain string
@@ -81,13 +101,41 @@ func main() {
 			break
 		}
 	}
+}
 
-	sort.Slice(results, func(i, j int) bool {
-		return results[i].guesses < results[j].guesses
-	})
-
-	fmt.Println("Podsumowanie wyników:")
-	for _, result := range results {
-		fmt.Printf("%s odgadł(a) w %d próbach\n", result.name, result.guesses)
+func loadResultsFromFile(filename string, results *[]playerResult) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return
 	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, ";")
+		if len(fields) == 4 {
+			guesses, err := strconv.Atoi(fields[1])
+			if err == nil {
+				date, err := time.Parse("2006-01-02", fields[2])
+				if err == nil {
+					number, err := strconv.Atoi(fields[3])
+					if err == nil {
+						result := playerResult{fields[0], guesses, date, number}
+						*results = append(*results, result)
+					}
+				}
+			}
+		}
+	}
+}
+
+func saveResultToFile(filename string, result playerResult) {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(fmt.Sprintf("%s;%d;%s;%d\n", result.name, result.guesses, result.date.Format("2006-01-02"), result.number))
 }
