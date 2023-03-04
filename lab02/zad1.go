@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/big"
 	"strconv"
 )
 
@@ -33,7 +34,8 @@ func main() {
 	i = 1
 
 	for found == false {
-		silnia := strconv.Itoa(silnia(i))
+		silnia := silnia2(i).String()
+		fmt.Println("Silnia: ", silnia)
 		digits := ""
 		for _, ch := range silnia {
 			digits += string(ch)
@@ -62,10 +64,25 @@ func silnia(n int) int {
 	if n == 0 {
 		return 1
 	}
+	fmt.Print(n)
 	return n * silnia(n-1)
 }
 
+func silnia2(n int) *big.Int {
+	if n == 0 {
+		return big.NewInt(1)
+	}
+	return big.NewInt(int64(n)).Mul(big.NewInt(int64(n)), silnia2(n-1))
+}
+
 func contains(str string, substr string) bool {
-	fmt.Println(str, substr)
-	return len(str) > 0 && len(substr) > 0 && len(str) >= len(substr) && (str == substr || (str[0:len(substr)] == substr || contains(str[1:], substr)))
+	if len(str) < len(substr) {
+		return false
+	}
+	for i := 0; i < len(str)-len(substr)+1; i++ {
+		if str[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }
