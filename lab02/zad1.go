@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"strconv"
 )
@@ -27,7 +28,7 @@ func main() {
 		ascii = append(ascii, int(nick[i]))
 	}
 
-	fmt.Println("Wartości ASCII: ", ascii)
+	// fmt.Println("Wartości ASCII: ", ascii)
 	var found bool
 
 	var i int
@@ -35,7 +36,6 @@ func main() {
 
 	for found == false {
 		silnia := silnia2(i).String()
-		fmt.Println("Silnia: ", silnia)
 		digits := ""
 		for _, ch := range silnia {
 			digits += string(ch)
@@ -50,9 +50,17 @@ func main() {
 		}
 
 		if allFound {
-			fmt.Println("Znaleziono silną liczbę: ", i)
+			fmt.Println("Silna liczba: ", i)
 			found = true
-			break
+			var calls [31]int
+			fibonacci(30, &calls)
+			var closest int
+			for j := 0; j < len(calls); j++ {
+				if math.Abs(float64(i-calls[j])) < math.Abs(float64(i-calls[closest])) {
+					closest = j
+				}
+			}
+			fmt.Println("Słaba liczba: ", closest)
 		}
 
 		i = i + 1
@@ -85,4 +93,15 @@ func contains(str string, substr string) bool {
 		}
 	}
 	return false
+}
+
+func fibonacci(n int, calls *[31]int) int {
+	calls[n] += 1
+	if n == 0 {
+		return 0
+	}
+	if n == 1 {
+		return 1
+	}
+	return fibonacci(n-1, calls) + fibonacci(n-2, calls)
 }
