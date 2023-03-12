@@ -20,8 +20,8 @@ func main() {
 	}
 	defer file.Close()
 
-	for i := start; i <= end-1; i += step {
-		for j := i; j <= i+step; j++ {
+	for i := start; i <= end; i += step {
+		for j := i; j <= i+step-1; j++ {
 			length := collatz(j)
 			file.WriteString(strconv.Itoa(j) + " " + strconv.Itoa(length) + "\n")
 		}
