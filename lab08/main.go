@@ -1,63 +1,79 @@
 package main
 
 import (
+	"flag"
+	"image/color"
+	"log"
 	"math/rand"
-	"runtime"
-	"time"
 
-	"github.com/go-gl/gl/v2.1/gl"
-	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
-func init() {
-	runtime.LockOSThread()
+type Game struct {
+	layers [100][100]int
+}
+
+func (g *Game) Update() error {
+	for i := range g.layers {
+		for j := range g.layers[i] {
+			if g.layers[i][j] == 1 {
+				ni, nj := i+rand.Intn(3)-1, j+rand.Intn(3)-1
+				if ni >= 0 && ni < len(g.layers) && nj >= 0 && nj < len(g.layers[0]) {
+					g.layers[ni][nj] = 1
+					g.layers[i][j] = 0
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (g *Game) Draw(screen *ebiten.Image) {
+	tileXcount := len(g.layers[0])
+	tileYcount := len(g.layers)
+	x, _ := screen.Size()
+	tileSize := x / tileXcount
+
+	for i := 0; i < tileXcount; i++ {
+		for j := 0; j < tileYcount; j++ {
+			if g.layers[j][i] == 0 {
+				ebitenutil.DrawRect(screen, float64(i*tileSize), float64(j*tileSize), float64(tileSize), float64(tileSize), color.White)
+			}
+		}
+	}
+}
+
+func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+	return 500, 500
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-	err := glfw.Init()
-	if err != nil {
-		panic(err)
-	}
-	defer glfw.Terminate()
+	antMap := [100][100]int{}
+	for i := 0; i < 100; i++ {
+		for j := 0; j < 100; j++ {
+			if rand.Intn(100) < 10 {
+				antMap[i][j] = rand.Intn(2)
+			}
 
-	window, err := glfw.CreateWindow(1024, 512, "Testing", nil, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	err = gl.Init()
-	if err != nil {
-		panic(err)
-	}
-
-	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
-
-	x, y := float32(512), float32(256)
-
-	window.MakeContextCurrent()
-
-	for !window.ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-		gl.Color3f(1.0, 1.0, 1.0)
-		gl.Begin(gl.POINTS)
-		gl.Vertex2f(x, y)
-		gl.End()
-
-		window.SwapBuffers()
-		glfw.PollEvents()
-
-		if window.GetKey(glfw.KeyQ) == glfw.Press || window.GetKey(glfw.KeyEscape) == glfw.Press {
-			break
-		}
-
-		dx, dy := rand.Float32()*2-1, rand.Float32()*2-1
-		x += dx
-		y += dy
-
-		if x < 0 || x > 1024 || y < 0 || y > 512 {
-			break
 		}
 	}
+
+	game := &Game{
+		layers: antMap}
+
+	getSize()
+	ebiten.SetWindowTitle("Your game's title")
+
+	if err := ebiten.RunGame(game); err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+func getSize() {
+	w := flag.Int("w", 640, "window width")
+	h := flag.Int("h", 480, "window height")
+	flag.Parse()
+	ebiten.SetWindowSize(*w, *h)
 }
