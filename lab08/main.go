@@ -15,13 +15,30 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	for i := range g.layers {
-		for j := range g.layers[i] {
+	for i := 0; i < 100; i++ {
+		for j := 0; j < 100; j++ {
 			if g.layers[i][j] == 1 {
-				ni, nj := i+rand.Intn(3)-1, j+rand.Intn(3)-1
-				if ni >= 0 && ni < len(g.layers) && nj >= 0 && nj < len(g.layers[0]) {
-					g.layers[ni][nj] = 1
-					g.layers[i][j] = 0
+				c := rand.Intn(4)
+				if c == 0 {
+					if i > 0 {
+						g.layers[i][j] = 0
+						g.layers[i-1][j] = 1
+					}
+				} else if c == 1 {
+					if i < 99 {
+						g.layers[i][j] = 0
+						g.layers[i+1][j] = 1
+					}
+				} else if c == 2 {
+					if j > 0 {
+						g.layers[i][j] = 0
+						g.layers[i][j-1] = 1
+					}
+				} else if c == 3 {
+					if j < 99 {
+						g.layers[i][j] = 0
+						g.layers[i][j+1] = 1
+					}
 				}
 			}
 		}
@@ -63,7 +80,7 @@ func main() {
 		layers: antMap}
 
 	getSize()
-	ebiten.SetWindowTitle("Your game's title")
+	ebiten.SetWindowTitle("mrówy")
 
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
