@@ -20,22 +20,22 @@ func (g *Game) Update() error {
 			if g.layers[i][j] == 1 {
 				c := rand.Intn(4)
 				if c == 0 {
-					if i > 0 {
+					if i > 0 && g.layers[i-1][j] == 0 {
 						g.layers[i][j] = 0
 						g.layers[i-1][j] = 1
 					}
 				} else if c == 1 {
-					if i < 99 {
+					if i < 99 && g.layers[i+1][j] == 0 {
 						g.layers[i][j] = 0
 						g.layers[i+1][j] = 1
 					}
 				} else if c == 2 {
-					if j > 0 {
+					if j > 0 && g.layers[i][j-1] == 0 {
 						g.layers[i][j] = 0
 						g.layers[i][j-1] = 1
 					}
 				} else if c == 3 {
-					if j < 99 {
+					if j < 99 && g.layers[i][j+1] == 0 {
 						g.layers[i][j] = 0
 						g.layers[i][j+1] = 1
 					}
