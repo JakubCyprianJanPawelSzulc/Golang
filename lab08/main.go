@@ -11,51 +11,70 @@ import (
 )
 
 type Game struct {
-	layers [100][100]int
+	layers [100][100]Ant
+}
+
+type Ant struct {
+	direction   int
+	timeToMove  int
+	currentMove int
 }
 
 func (g *Game) Update() error {
-	for i := 0; i < 100; i++ {
-		for j := 0; j < 100; j++ {
-			if g.layers[i][j] == 1 {
-				c := rand.Intn(4)
-				if c == 0 {
-					if i > 0 && g.layers[i-1][j] == 0 {
-						g.layers[i][j] = 0
-						g.layers[i-1][j] = 1
+	for tileX := range g.layers {
+		for tileY := range g.layers[tileX] {
+			if g.layers[tileX][tileY].timeToMove != 0 {
+				if g.layers[tileX][tileY].currentMove < g.layers[tileX][tileY].timeToMove {
+					g.layers[tileX][tileY].currentMove++
+				} else {
+					if g.layers[tileX][tileY].direction == 0 {
+						if tileY != 0 && g.layers[tileX][tileY-1].timeToMove == 0 {
+							g.layers[tileX][tileY-1] = g.layers[tileX][tileY]
+							g.layers[tileX][tileY] = Ant{}
+							g.layers[tileX][tileY-1].currentMove = 0
+						}
 					}
-				} else if c == 1 {
-					if i < 99 && g.layers[i+1][j] == 0 {
-						g.layers[i][j] = 0
-						g.layers[i+1][j] = 1
+					if g.layers[tileX][tileY].direction == 1 {
+						if tileY != 99 && g.layers[tileX][tileY+1].timeToMove == 0 {
+							g.layers[tileX][tileY+1] = g.layers[tileX][tileY]
+							g.layers[tileX][tileY] = Ant{}
+							g.layers[tileX][tileY+1].currentMove = 0
+						}
 					}
-				} else if c == 2 {
-					if j > 0 && g.layers[i][j-1] == 0 {
-						g.layers[i][j] = 0
-						g.layers[i][j-1] = 1
+					if g.layers[tileX][tileY].direction == 2 {
+						if tileX != 0 && g.layers[tileX-1][tileY].timeToMove == 0 {
+							g.layers[tileX-1][tileY] = g.layers[tileX][tileY]
+							g.layers[tileX][tileY] = Ant{}
+							g.layers[tileX-1][tileY].currentMove = 0
+						}
 					}
-				} else if c == 3 {
-					if j < 99 && g.layers[i][j+1] == 0 {
-						g.layers[i][j] = 0
-						g.layers[i][j+1] = 1
+					if g.layers[tileX][tileY].direction == 3 {
+						if tileX != 99 && g.layers[tileX+1][tileY].timeToMove == 0 {
+							g.layers[tileX+1][tileY] = g.layers[tileX][tileY]
+							g.layers[tileX][tileY] = Ant{}
+							g.layers[tileX+1][tileY].currentMove = 0
+						}
 					}
+					newDirection := rand.Intn(4)
+					for newDirection == g.layers[tileX][tileY].direction {
+						newDirection = rand.Intn(4)
+					}
+					g.layers[tileX][tileY].direction = newDirection
+					g.layers[tileX][tileY].currentMove = 0
 				}
 			}
 		}
 	}
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	tileXcount := len(g.layers[0])
-	tileYcount := len(g.layers)
-	x, _ := screen.Size()
-	tileSize := x / tileXcount
 
-	for i := 0; i < tileXcount; i++ {
-		for j := 0; j < tileYcount; j++ {
-			if g.layers[j][i] == 0 {
-				ebitenutil.DrawRect(screen, float64(i*tileSize), float64(j*tileSize), float64(tileSize), float64(tileSize), color.White)
+	for tileX := range g.layers {
+		for tileY := range g.layers[tileX] {
+			if g.layers[tileX][tileY].timeToMove != 0 {
+				ebitenutil.DrawRect(screen, float64(tileX*5), float64(tileY*5), 5, 5, color.White)
 			}
 		}
 	}
@@ -66,13 +85,13 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	antMap := [100][100]int{}
+
+	antMap := [100][100]Ant{}
 	for i := 0; i < 100; i++ {
 		for j := 0; j < 100; j++ {
 			if rand.Intn(100) < 10 {
-				antMap[i][j] = rand.Intn(2)
+				antMap[i][j] = Ant{rand.Intn(4), 1, 0}
 			}
-
 		}
 	}
 
@@ -85,7 +104,6 @@ func main() {
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func getSize() {
