@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -16,11 +17,16 @@ const (
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	noColor := flag.Bool("nocolor", false, "Wyłącza kolorowanie wyjścia")
+	showStatus := flag.String("status", "", "Wyświetla tylko zadania o określonym statusie (done, nope, inprogress, todo)")
+	flag.Parse()
+
+	if flag.NArg() < 1 {
 		fmt.Println("Podaj nazwę pliku jako argument wywołania programu.")
 		return
 	}
-	fileName := os.Args[1]
+
+	fileName := flag.Arg(0)
 
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -34,11 +40,16 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		status := getStatus(line)
-		color := getColor(status)
-
-		fmt.Printf("%s%s%s\n", color, line, Reset)
+		if *showStatus != "" && status != *showStatus {
+			continue
+		}
+		if *noColor {
+			fmt.Println(line)
+		} else {
+			color := getColor(status)
+			fmt.Printf("%s%s%s\n", color, line, Reset)
+		}
 	}
-
 	if err := scanner.Err(); err != nil {
 		fmt.Printf("Błąd odczytu pliku: %v\n", err)
 	}
@@ -46,27 +57,27 @@ func main() {
 
 func getStatus(line string) string {
 	if strings.HasPrefix(line, "[x]") {
-		return "DONE"
+		return "done"
 	} else if strings.HasPrefix(line, "[-]") {
-		return "NOPE"
+		return "nope"
 	} else if strings.HasPrefix(line, "[+]") {
-		return "IN PROGRESS"
+		return "inprogress"
 	} else if strings.HasPrefix(line, "[ ]") {
-		return "TODO"
+		return "todo"
 	} else {
-		return "COMMENT"
+		return "comment"
 	}
 }
 
 func getColor(status string) string {
 	switch status {
-	case "DONE":
+	case "done":
 		return Green
-	case "NOPE":
+	case "nope":
 		return Gray
-	case "IN PROGRESS":
+	case "inprogress":
 		return Red
-	case "TODO":
+	case "todo":
 		return Yellow
 	default:
 		return Reset
