@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
@@ -21,17 +22,28 @@ func main() {
 	showStatus := flag.String("status", "", "Wyświetla tylko zadania o określonym statusie (done, nope, inprogress, todo)")
 	flag.Parse()
 
-	if flag.NArg() < 1 {
-		fmt.Println("Podaj nazwę pliku jako argument wywołania programu.")
+	fileNames := flag.Args()
+
+	if len(fileNames) == 0 {
+		err := processInput(os.Stdin, *noColor, *showStatus)
+		if err != nil {
+			fmt.Printf("Błąd przetwarzania danych wejściowych: %v\n", err)
+		}
 		return
 	}
 
-	fileName := flag.Arg(0)
+	for _, fileName := range fileNames {
+		err := processFile(fileName, *noColor, *showStatus)
+		if err != nil {
+			fmt.Printf("Błąd przetwarzania pliku %s: %v\n", fileName, err)
+		}
+	}
+}
 
+func processFile(fileName string, noColor bool, showStatus string) error {
 	file, err := os.Open(fileName)
 	if err != nil {
-		fmt.Printf("Błąd podczas otwierania pliku: %v\n", err)
-		return
+		return fmt.Errorf("błąd podczas otwierania pliku %s: %v", fileName, err)
 	}
 	defer file.Close()
 
@@ -40,10 +52,36 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		status := getStatus(line)
-		if *showStatus != "" && status != *showStatus {
+		if showStatus != "" && status != showStatus {
 			continue
 		}
-		if *noColor {
+
+		if noColor {
+			fmt.Println(line)
+		} else {
+			color := getColor(status)
+			fmt.Printf("%s%s%s\n", color, line, Reset)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("błąd odczytu pliku %s: %v", fileName, err)
+	}
+
+	return nil
+}
+
+func processInput(input io.Reader, noColor bool, showStatus string) error {
+	scanner := bufio.NewScanner(input)
+	for scanner.Scan() {
+		line := scanner.Text()
+		status := getStatus(line)
+
+		if showStatus != "" && status != showStatus {
+			continue
+		}
+
+		if noColor {
 			fmt.Println(line)
 		} else {
 			color := getColor(status)
@@ -51,8 +89,9 @@ func main() {
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		fmt.Printf("Błąd odczytu pliku: %v\n", err)
+		return fmt.Errorf("błąd odczytu danych wejściowych: %v", err)
 	}
+	return nil
 }
 
 func getStatus(line string) string {
