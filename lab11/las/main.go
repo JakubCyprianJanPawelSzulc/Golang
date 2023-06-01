@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
+
+	"github.com/hajimehoshi/go-mp3"
+	"github.com/hajimehoshi/oto/v2"
 )
 
 type Position struct {
@@ -24,7 +29,7 @@ func main() {
 
 	generateForest(&forest, width, height, perc)
 
-	fmt.Println("Wciskaj enter, aby strzelać piorunem")
+	fmt.Println("Drücken Sie die Eingabetaste, um einen Blitz aufzunehmen")
 
 	for {
 		var input string
@@ -56,7 +61,7 @@ func printForest(forest [][]int) {
 		}
 		fmt.Println()
 	}
-	fmt.Println("\n\n")
+	fmt.Println("")
 }
 
 func burnForest(forest *[][]int, x, y int, change *bool) {
@@ -122,6 +127,8 @@ func roundOfBurningForest(forest *[][]int, width, height int) {
 		(*forest)[lightningY][lightningX] = 5
 	}
 
+	go playThunderSound()
+
 	printForest(*forest)
 	burnForest(forest, lightningX, lightningY, &change)
 	if change {
@@ -141,4 +148,39 @@ func countBurnedTrees(forest [][]int) int {
 		}
 	}
 	return count
+}
+
+func playThunderSound() {
+	// fileBytes, err := os.ReadFile("./thunder1.mp3")
+	fileBytes, err := os.ReadFile("./thunder2.mp3")
+	if err != nil {
+		panic("Das Öffnen der Datei ist fehlgeschlagen: " + err.Error())
+	}
+	fileBytesReader := bytes.NewReader(fileBytes)
+	decodedMp3, err := mp3.NewDecoder(fileBytesReader)
+	if err != nil {
+		panic("mp3.NewDecoder ist kaputt: " + err.Error())
+	}
+
+	samplingRate := 44100
+	numOfChannels := 2
+	audioBitDepth := 2
+
+	otoCtx, readyChan, err := oto.NewContext(samplingRate, numOfChannels, audioBitDepth)
+	if err != nil {
+		panic("oto.NewContext funktioniert nicht: " + err.Error())
+	}
+	<-readyChan
+
+	player := otoCtx.NewPlayer(decodedMp3)
+
+	player.Play()
+
+	for player.IsPlaying() {
+		time.Sleep(time.Millisecond)
+	}
+	err = player.Close()
+	if err != nil {
+		panic("player.Close ist fehlgeschlagen: " + err.Error())
+	}
 }
