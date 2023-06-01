@@ -13,8 +13,8 @@ type Position struct {
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	width := 20
-	height := 20
+	width := 10
+	height := 10
 	perc := 60
 
 	forest := make([][]int, height)
@@ -24,8 +24,18 @@ func main() {
 
 	generateForest(&forest, width, height, perc)
 
-	roundOfBurningForest(&forest, width, height)
-	roundOfBurningForest(&forest, width, height)
+	fmt.Println("Wciskaj enter, aby strzelać piorunem")
+
+	for {
+		var input string
+		fmt.Scanln(&input)
+		if input == "" {
+			roundOfBurningForest(&forest, width, height)
+		} else {
+			break
+		}
+	}
+
 	printForest(forest)
 }
 
@@ -116,6 +126,19 @@ func roundOfBurningForest(forest *[][]int, width, height int) {
 	burnForest(forest, lightningX, lightningY, &change)
 	if change {
 		printForest(*forest)
+		fmt.Println("Spłonęło", countBurnedTrees(*forest))
 	}
 	clearFire(forest)
+}
+
+func countBurnedTrees(forest [][]int) int {
+	count := 0
+	for _, row := range forest {
+		for _, cell := range row {
+			if cell == 4 || cell == 3 {
+				count++
+			}
+		}
+	}
+	return count
 }
