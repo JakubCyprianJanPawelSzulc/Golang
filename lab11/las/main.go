@@ -15,44 +15,107 @@ func main() {
 
 	width := 20
 	height := 20
+	perc := 60
 
-	forest := make([][]bool, height)
+	forest := make([][]int, height)
 	for i := range forest {
-		forest[i] = make([]bool, width)
+		forest[i] = make([]int, width)
 	}
 
-	lightningX := rand.Intn(width)
-	lightningY := rand.Intn(height)
+	generateForest(&forest, width, height, perc)
 
-	forest[lightningY][lightningX] = true
-
-	burnForest(&forest, lightningX, lightningY)
-
-	printForest(&forest)
+	roundOfBurningForest(&forest, width, height)
+	roundOfBurningForest(&forest, width, height)
+	printForest(forest)
 }
 
-func printForest(forest *[][]bool) {
-	for _, row := range *forest {
+func printForest(forest [][]int) {
+	for _, row := range forest {
 		for _, cell := range row {
-			if cell == true {
-				// fmt.Print("🔥")
-				fmt.Print("⬛")
-			} else {
+			if cell == 1 {
 				fmt.Print("🌲")
+			} else if cell == 2 {
+				fmt.Print("⬛")
+			} else if cell == 3 {
+				fmt.Print("🔥")
+			} else if cell == 4 {
+				fmt.Print("💥")
+			} else if cell == 5 {
+				fmt.Print("⚡️")
 			}
 		}
 		fmt.Println()
 	}
+	fmt.Println("\n\n")
 }
 
-func burnForest(forest *[][]bool, x, y int) {
-	if x < 0 || x >= len((*forest)[0]) || y < 0 || y >= len(*forest) || !(*forest)[y][x] {
+func burnForest(forest *[][]int, x, y int, change *bool) {
+
+	if x < 0 || x >= len((*forest)[0]) || y < 0 || y >= len(*forest) {
 		return
 	}
-	(*forest)[y][x] = false
 
-	burnForest(forest, x-1, y)
-	burnForest(forest, x+1, y)
-	burnForest(forest, x, y-1)
-	burnForest(forest, x, y+1)
+	if (*forest)[y][x] == 1 || (*forest)[y][x] == 4 {
+		(*forest)[y][x] = 3
+		*change = true
+	} else {
+		return
+	}
+
+	burnForest(forest, x-1, y, change)
+	burnForest(forest, x+1, y, change)
+	burnForest(forest, x, y-1, change)
+	burnForest(forest, x, y+1, change)
+}
+
+func clearFire(forest *[][]int) {
+	for y, row := range *forest {
+		for x := range row {
+			if (*forest)[y][x] == 3 || (*forest)[y][x] == 4 || (*forest)[y][x] == 5 {
+				(*forest)[y][x] = 2
+			}
+		}
+	}
+}
+
+func generateForest(forest *[][]int, width, height, perc int) {
+	treeCount := (width * height * perc) / 100
+	count := 0
+
+	for count < treeCount {
+		x := rand.Intn(width)
+		y := rand.Intn(height)
+
+		if (*forest)[y][x] == 0 {
+			(*forest)[y][x] = 1
+			count++
+		}
+	}
+
+	for y, row := range *forest {
+		for x := range row {
+			if row[x] != 1 {
+				(*forest)[y][x] = 2
+			}
+		}
+	}
+}
+
+func roundOfBurningForest(forest *[][]int, width, height int) {
+	lightningX := rand.Intn(width)
+	lightningY := rand.Intn(height)
+	change := false
+
+	if (*forest)[lightningY][lightningX] == 1 {
+		(*forest)[lightningY][lightningX] = 4
+	} else if (*forest)[lightningY][lightningX] == 2 {
+		(*forest)[lightningY][lightningX] = 5
+	}
+
+	printForest(*forest)
+	burnForest(forest, lightningX, lightningY, &change)
+	if change {
+		printForest(*forest)
+	}
+	clearFire(forest)
 }
