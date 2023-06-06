@@ -1,0 +1,27 @@
+.card {
+  .p-inputtext {
+    border-radius: 6px !important;
+  }
+  .buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.table-add-book {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .p-button {
+    border-radius: 24px;
+    align-self: flex-end;
+  }
+}
+#add-form {
+  .p-inputtext {
+    width: 100%;
+  }
+}

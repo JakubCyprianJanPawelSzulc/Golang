@@ -1,0 +1,94 @@
+.navbar {
+  height: 60px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white;
+  cursor: default;
+
+  .logo {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    padding: 16px;
+    cursor: pointer;
+
+    i {
+      font-size: 2rem;
+      color: #4a4a4a;
+    }
+    transition: all 0.5s ease-in-out;
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &.smaller {
+      align-items: center;
+      justify-content: center;
+      i {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .absolute {
+    position: absolute;
+  }
+
+  .invisible {
+    visibility: hidden;
+  }
+
+  .slide-in-logout {
+    animation: slide-in 0.5s forwards;
+  }
+
+  .slide-out-logout {
+    animation: slide-out 0.5s forwards;
+  }
+
+  @keyframes slide-in {
+    0% {
+      transform: translateX(50px);
+    }
+    100% {
+      transform: translateX(0%);
+    }
+  }
+
+  @keyframes slide-out {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(50px);
+    }
+  }
+
+  .filler {
+    width: 64px;
+  }
+
+  .text {
+    font-size: 1.7rem;
+    user-select: none;
+  }
+}
+
+.slide-in {
+  width: 100%;
+  background-color: white;
+  overflow: hidden;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  font-size: 1.3rem;
+  transition: all 0.4s ease-in-out;
+  .page {
+    user-select: none;
+    cursor: pointer;
+  }
+}

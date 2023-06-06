@@ -1,0 +1,59 @@
+.p-inputtext {
+  width: 300px;
+}
+
+.register {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.register-box {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.half {
+  display: flex;
+  gap: 8px;
+  .p-inputtext {
+    width: 100%;
+  }
+}
+
+.flex-col-gap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &.inline {
+    width: 50%;
+  }
+}
+
+.password-footer {
+  padding: 0 1.2rem;
+}
+
+.header-pas {
+  margin-bottom: 8px;
+}
+
+.p-divider.p-divider-horizontal:before {
+  border-top: 1px solid #c7cdd1;
+}
+
+.sug {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.login-redirect {
+  text-align: end;
+  cursor: pointer;
+}

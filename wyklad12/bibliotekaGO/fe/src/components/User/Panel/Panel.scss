@@ -1,0 +1,165 @@
+$tileOneColor: #5e35b1;
+
+.top {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, min-content);
+  gap: 32px;
+  margin-top: 80px;
+  justify-content: center;
+}
+
+.data-box {
+  width: 300px;
+  height: 200px;
+  border-radius: 12px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+
+  .value {
+    font-size: 2rem;
+    color: White;
+    font-weight: 600;
+  }
+
+  &:nth-child(1) {
+    background-color: $tileOneColor;
+    .icon {
+      $col: lighten(
+        $color: $tileOneColor,
+        $amount: 15
+      );
+      background-color: transparentize($color: $col, $amount: 0.4);
+    }
+  }
+  &:nth-child(2) {
+    background-color: #1e88e5;
+
+    .icon {
+      $col: lighten(
+        $color: #1e88e5,
+        $amount: 15
+      );
+      background-color: transparentize($color: $col, $amount: 0.4);
+    }
+  }
+
+  &:nth-child(3) {
+    background-color: #59d582;
+
+    .icon {
+      $col: lighten(
+        $color: #59d582,
+        $amount: 15
+      );
+      background-color: transparentize($color: $col, $amount: 0.4);
+    }
+  }
+
+  .desc {
+    opacity: 0.8;
+    color: white;
+  }
+
+  .icon {
+    padding: 12px;
+    width: min-content;
+
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    i {
+      color: White;
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .card {
+    width: 1020px;
+  }
+}
+
+.p-datatable {
+  width: 100%;
+
+  .p-datatable-header {
+    border-top: 0;
+  }
+}
+
+.status-badge {
+  border-radius: 2px;
+  padding: 0.25em 0.5rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+.status-returned {
+  background: #c8e6c9;
+  color: #256029;
+}
+
+.status-borrowed {
+  background: #f59e0b;
+  color: #fdfdfd;
+}
+
+.status-ready {
+  background: #e91e63;
+  color: #fdfdfd;
+}
+
+.status-cancelled {
+  background: #ffcdd2;
+  color: #c63737;
+}
+
+.status-new {
+  background: #64748b;
+  color: #ffffff;
+}
+
+.status-confirmed {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.newActions {
+  display: flex;
+  gap: 8px;
+  .p-button {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+}
+
+.pay-dialog {
+  padding: 16px;
+
+  .header {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .p-progress-spinner {
+    width: 50px !important;
+    height: 50px !important;
+  }
+
+  .p-inputtext {
+    width: 200px;
+  }
+}

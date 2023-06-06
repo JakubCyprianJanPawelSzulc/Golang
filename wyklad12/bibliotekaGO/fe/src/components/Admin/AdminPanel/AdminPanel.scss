@@ -1,0 +1,26 @@
+.admin-panel {
+  .nav-section {
+    margin-top: 24px;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+
+    .link {
+      font-size: 1.2rem;
+      user-select: none;
+
+      user-select: none;
+      cursor: pointer;
+
+      &.active {
+        font-weight: 600;
+      }
+    }
+  }
+
+  .dynamic-content {
+    display: flex;
+    justify-content: center;
+    margin-top: 64px;
+  }
+}

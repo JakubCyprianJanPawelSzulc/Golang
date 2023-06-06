@@ -1,0 +1,27 @@
+.p-inputtext {
+  width: 300px;
+}
+
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-box {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  .p-button {
+    transition: background-color 0.2s ease-in-out;
+  }
+}
+
+.flex-col-gap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

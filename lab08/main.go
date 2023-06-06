@@ -20,9 +20,11 @@ type Tile struct {
 }
 
 type Ant struct {
-	direction   int
-	timeToMove  int
-	currentMove int
+	direction     int
+	timeToMove    int
+	currentMove   int
+	turnFrequency int
+	turnCounter   int
 }
 
 func (g *Game) Update() error {
@@ -42,6 +44,17 @@ func (g *Game) Update() error {
 						g.layers[nextTileX][nextTileY].ant = ant
 						g.layers[tileX][tileY].ant = Ant{}
 						g.layers[nextTileX][nextTileY].ant.currentMove = 0
+
+						if ant.turnCounter == ant.turnFrequency {
+							newDirection := rand.Intn(4)
+							for newDirection == ant.direction {
+								newDirection = rand.Intn(4)
+							}
+							g.layers[nextTileX][nextTileY].ant.direction = newDirection
+							g.layers[nextTileX][nextTileY].ant.turnCounter = 0
+						} else {
+							g.layers[nextTileX][nextTileY].ant.turnCounter++
+						}
 					} else {
 						newDirection := rand.Intn(4)
 						for newDirection == ant.direction {
@@ -49,6 +62,7 @@ func (g *Game) Update() error {
 						}
 						g.layers[tileX][tileY].ant.direction = newDirection
 						g.layers[tileX][tileY].ant.currentMove = 0
+						g.layers[tileX][tileY].ant.turnCounter = 0
 					}
 				}
 			}
@@ -100,7 +114,7 @@ func main() {
 	for i := 0; i < 100; i++ {
 		for j := 0; j < 100; j++ {
 			if rand.Intn(100) < 10 {
-				antMap[i][j].ant = Ant{rand.Intn(4), 1, 0}
+				antMap[i][j].ant = Ant{rand.Intn(4), 1, 0, rand.Intn(5) + 1, 0}
 			}
 			if rand.Intn(100) < 5 {
 				leafLayer[i][j] = true

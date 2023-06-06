@@ -1,0 +1,13 @@
+.search-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 80px;
+  flex-direction: column;
+  gap: 16px;
+
+  .p-dropdown {
+    width: 500px;
+    border-radius: 24px;
+  }
+}
