@@ -16,7 +16,8 @@ type Game struct {
 }
 
 type Tile struct {
-	ant Ant
+	ant  Ant
+	leaf bool
 }
 
 type Ant struct {
@@ -25,6 +26,7 @@ type Ant struct {
 	currentMove   int
 	turnFrequency int
 	turnCounter   int
+	hasLeaf       bool
 }
 
 func (g *Game) Update() error {
@@ -37,13 +39,27 @@ func (g *Game) Update() error {
 					ant := g.layers[tileX][tileY].ant
 					nextTileX, nextTileY := getNextTileCoordinates(tileX, tileY, ant.direction)
 					if isValidTile(nextTileX, nextTileY) && g.layers[nextTileX][nextTileY].ant.timeToMove == 0 {
-						if g.leafLayer[nextTileX][nextTileY] {
-							g.leafLayer[nextTileX][nextTileY] = false
+						if g.layers[nextTileX][nextTileY].leaf && !ant.hasLeaf {
+							ant.hasLeaf = true
+							g.layers[nextTileX][nextTileY].leaf = false
 						}
 
 						g.layers[nextTileX][nextTileY].ant = ant
 						g.layers[tileX][tileY].ant = Ant{}
 						g.layers[nextTileX][nextTileY].ant.currentMove = 0
+
+						if ant.hasLeaf && rand.Intn(100) < 15 { //15% na wyrzucenie liścia
+							if isValidTile(nextTileX, nextTileY-1) && !g.layers[nextTileX][nextTileY-1].leaf && g.layers[nextTileX][nextTileY-1].ant.timeToMove == 0 {
+								g.layers[nextTileX][nextTileY-1].leaf = true
+							} else if isValidTile(nextTileX, nextTileY+1) && !g.layers[nextTileX][nextTileY+1].leaf && g.layers[nextTileX][nextTileY+1].ant.timeToMove == 0 {
+								g.layers[nextTileX][nextTileY+1].leaf = true
+							} else if isValidTile(nextTileX-1, nextTileY) && !g.layers[nextTileX-1][nextTileY].leaf && g.layers[nextTileX-1][nextTileY].ant.timeToMove == 0 {
+								g.layers[nextTileX-1][nextTileY].leaf = true
+							} else if isValidTile(nextTileX+1, nextTileY) && !g.layers[nextTileX+1][nextTileY].leaf && g.layers[nextTileX+1][nextTileY].ant.timeToMove == 0 {
+								g.layers[nextTileX+1][nextTileY].leaf = true
+							}
+							g.layers[nextTileX][nextTileY].ant.hasLeaf = false
+						}
 
 						if ant.turnCounter == ant.turnFrequency {
 							newDirection := rand.Intn(4)
@@ -95,7 +111,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		for tileY := range g.layers[tileX] {
 			if g.layers[tileX][tileY].ant.timeToMove != 0 {
 				ebitenutil.DrawRect(screen, float64(tileX*5), float64(tileY*5), 5, 5, color.Black)
-			} else if g.leafLayer[tileX][tileY] == true {
+			} else if g.layers[tileX][tileY].leaf {
 				ebitenutil.DrawRect(screen, float64(tileX*5), float64(tileY*5), 5, 5, color.RGBA{0, 255, 0, 255})
 			} else if g.layers[tileX][tileY].ant.timeToMove == 0 {
 				ebitenutil.DrawRect(screen, float64(tileX*5), float64(tileY*5), 5, 5, color.White)
@@ -110,21 +126,19 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func main() {
 	antMap := [100][100]Tile{}
-	leafLayer := [100][100]bool{}
 	for i := 0; i < 100; i++ {
 		for j := 0; j < 100; j++ {
 			if rand.Intn(100) < 10 {
-				antMap[i][j].ant = Ant{rand.Intn(4), 1, 0, rand.Intn(5) + 1, 0}
+				antMap[i][j].ant = Ant{rand.Intn(4), 1, 0, rand.Intn(5) + 1, 0, false}
 			}
 			if rand.Intn(100) < 5 {
-				leafLayer[i][j] = true
+				antMap[i][j].leaf = true
 			}
 		}
 	}
 
 	game := &Game{
-		layers:    antMap,
-		leafLayer: leafLayer,
+		layers: antMap,
 	}
 
 	getSize()
