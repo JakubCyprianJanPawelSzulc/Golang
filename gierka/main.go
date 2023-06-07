@@ -56,7 +56,7 @@ func WyborPol(col int, row int, plansza [][]int) {
 	plansza[row][col] = -1
 }
 
-func Strzelanie(plansza [][]int, pozycje [][]int, licznik *[]int, czas float64) {
+func Strzelanie(plansza [][]int, pozycje [][]int, licznik *[]int, czas float64, done chan bool) {
 	listapomocnicza := [][]int{}
 	col := rand.Intn(5)
 	row := rand.Intn(5)
@@ -91,15 +91,19 @@ func Strzelanie(plansza [][]int, pozycje [][]int, licznik *[]int, czas float64) 
 		WyborPol(col2, row2, plansza)
 		pozycje = append(pozycje, []int{col2, row2})
 		RysujPlansze(plansza)
-		timeout := czas
-		timeout_start := time.Now()
-		for time.Since(timeout_start).Seconds() < timeout {
+
+		timeout := time.Duration(czas) * time.Second
+		timer := time.NewTimer(timeout)
+		defer timer.Stop()
+
+		go func() {
 			var a string
 			fmt.Scanln(&a)
 			dlugosc := len(a)
 			if dlugosc == 2 {
-				x := int(a[:len(a)/2][0] - '0')
-				y := int(a[len(a)/2:][0] - '0')
+				x := int(a[0] - '0')
+				y := int(a[1] - '0')
+				hit := false
 				for k := 0; k < len(pozycje); k++ {
 					if x == pozycje[k][0] && y == pozycje[k][1] {
 						fmt.Println("hit")
@@ -107,12 +111,24 @@ func Strzelanie(plansza [][]int, pozycje [][]int, licznik *[]int, czas float64) 
 						plansza[y][x] = 0
 						RysujPlansze(plansza)
 						*licznik = append(*licznik, 1)
+						hit = true
 						break
 					}
+				}
+				if !hit {
+					fmt.Println("miss")
 				}
 			} else {
 				fmt.Println("error")
 			}
+			done <- true
+		}()
+
+		select {
+		case <-done:
+			return
+		case <-timer.C:
+			return
 		}
 	}
 }
@@ -121,9 +137,9 @@ func Gra() {
 	var czas float64
 	fmt.Print("Ile sekund na turę? ")
 	fmt.Scanln(&czas)
-	var trybgry int
-	fmt.Print("2 czy 3 przeciwników na turę? ")
-	fmt.Scanln(&trybgry)
+	var trybgry int = 2
+	// fmt.Print("2 czy 3 przeciwników na turę? ")
+	// fmt.Scanln(&trybgry)
 	licznik := []int{}
 	pozycje := [][]int{}
 	plansza := [][]int{{0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}}
@@ -147,7 +163,7 @@ func Gra() {
 					}
 				}
 			}
-			Strzelanie(plansza, pozycje, &licznik, czas)
+			Strzelanie(plansza, pozycje, &licznik, czas, make(chan bool))
 		}
 	}
 	RysujPlansze(plansza)
